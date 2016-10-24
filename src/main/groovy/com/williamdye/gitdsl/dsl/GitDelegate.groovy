@@ -1,5 +1,7 @@
 package com.williamdye.gitdsl.dsl
 
+import java.util.regex.Matcher
+
 /**
  * Closure delegate for the git method.
  */
@@ -24,6 +26,15 @@ class GitDelegate {
 
     void init() {
         executeGit "init"
+    }
+
+    void clone(String repository) {
+        Matcher matcher = repository =~ /^.+\/([\w-]+)\.git\/?$/
+        if (!matcher.find()) {
+            throw new IllegalArgumentException("repository to clone must end with '<name>.git'")
+        }
+        executeGit "clone $repository"
+        directory = "$directory/${matcher.group(1)}"
     }
 
     void add(String file) {
@@ -64,10 +75,11 @@ class GitDelegate {
         show "${command}${stdin ? ' (stdin = "' + stdin + '")' : ''}"
         Process process = command.execute([], new File(directory))
         if (stdin) {
-            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(process.out))
-            writer.write(stdin)
-            writer.flush()
-            writer.close()
+            new BufferedWriter(new OutputStreamWriter(process.out)).with {
+                write(stdin)
+                flush()
+                close()
+            }
         }
         process.waitFor()
         if (process.exitValue() != 0) {
@@ -88,7 +100,7 @@ class GitDelegate {
     }
 
     protected static void show(String message) {
-        println "-git-dsl-> $message"
+        println "\n\n\u001B[1m-git-dsl-> ${message}\u001B[0m"
     }
 
 }

@@ -7,7 +7,7 @@ class Script {
 
     static void git(String directory, Closure closure) {
         if (new File(directory).mkdirs()) {
-            debug("Created directory $directory")
+            debug "Created directory $directory"
         }
         GitDelegate delegate = new GitDelegate(directory)
         closure.delegate = delegate
@@ -15,7 +15,7 @@ class Script {
     }
 
     protected static void debug(String message) {
-        println("[DEBUG] $message")
+        println "[DEBUG] $message"
     }
 
 }
