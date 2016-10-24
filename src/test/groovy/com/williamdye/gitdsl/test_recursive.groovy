@@ -4,7 +4,6 @@ import static com.williamdye.gitdsl.Script.git
 
 
 git(args[0]) {
-    println "running, directory is $directory"
     clone "https://github.com/will2dye4/git-dsl.git"
     def groovy = "/Users/wdye/homebrew/opt/groovy/libexec/bin/groovy"
     def classpath = "src/main/groovy"
