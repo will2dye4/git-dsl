@@ -24,42 +24,43 @@ class GitDelegate {
         this.directory = directory
     }
 
-    void init() {
+    String init() {
         executeGit "init"
     }
 
-    void clone(String repository) {
+    String clone(String repository) {
         Matcher matcher = repository =~ /^.+\/([\w-]+)\.git\/?$/
         if (!matcher.find()) {
             throw new IllegalArgumentException("repository to clone must end with '<name>.git'")
         }
-        executeGit "clone $repository"
+        String stdout = executeGit "clone $repository"
         directory = "$directory/${matcher.group(1)}"
+        stdout
     }
 
-    void add(String file) {
+    String add(String file) {
         add files: [file]
     }
 
-    void add(Map<String, Object> params = [:]) {
+    String add(Map<String, Object> params = [:]) {
         if (!params[files]) {
             throw new IllegalArgumentException("add must specify one or more files")
         }
         executeGit "${buildCommand('add', [dry_run, force, verbose], params)} -- ${(params[files] as List).join(' ')}"
     }
 
-    void commit(Map<String, Object> params = [:], String message) {
+    String commit(Map<String, Object> params = [:], String message) {
         if (!message?.trim()) {
             throw new IllegalArgumentException("commit message must not be empty")
         }
         executeGit buildCommand("commit -F -", [dry_run, verbose], params), message
     }
 
-    void status() {
+    String status() {
         executeGit "status"
     }
 
-    void touch(String file) {
+    String touch(String file) {
         execute "touch $file"
     }
 
@@ -71,7 +72,7 @@ class GitDelegate {
         builder.toString()
     }
 
-    protected Process execute(String command, String stdin = null) {
+    protected String execute(String command, String stdin = null) {
         show "${command}${stdin ? ' (stdin = "' + stdin + '")' : ''}"
         Process process = command.execute([], new File(directory))
         if (stdin) {
@@ -92,10 +93,10 @@ class GitDelegate {
         if (output) {
             println output
         }
-        process
+        output
     }
 
-    protected Process executeGit(String command, String stdin = null) {
+    protected String executeGit(String command, String stdin = null) {
         execute "git $command", stdin
     }
 
